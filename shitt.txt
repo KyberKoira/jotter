@@ -1,0 +1,7 @@
+Here i have copied this newfile.txt in project file and compiling in VC++ 2008 IDE.It works fine
+
+I would like to read the file from a local drive directory path.is it possible to read the files from local drive.how to mention the path.If so please mention any example.
+
+one more thing If i want to read all the files in that particular folder with out changing the name of text files in the above code. Suggest me any thing to do.
+
+I dont want to change the file name manully in the code
