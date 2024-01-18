@@ -3,12 +3,16 @@
 #include <unistd.h>
 #include <limits.h>
 #include <string.h>
+#include <stdlib.h>
 
 char *line;
-char input[255];
+char input_char;
+char *input_char_p = &input_char;
 char cwd[PATH_MAX];
 char *cwd_pointer = cwd;
-int max_lines;
+int max_lines = 0;
+int *max_characters_per_line;
+FILE *fp;
 
 void concatenate_string(char* s, char* s1)
 {
@@ -25,32 +29,83 @@ void concatenate_string(char* s, char* s1)
     return;
 }
 
-void renderFile(int line, int character, char* filepath)
+void readFile(char* filepath)
 {
+	//Get current DIR
+	getcwd(cwd, sizeof(cwd));
+	
+	int characters = 0;
+
 	// Concatenate path to file, then open file
 	char path_to_file[PATH_MAX + strlen(filepath)];
 	strcpy(path_to_file, cwd_pointer);
 	concatenate_string(path_to_file, "/");
 	concatenate_string(path_to_file, filepath);
-	FILE* fp = fopen(path_to_file, "r");
+	fp = fopen(path_to_file, "r");
+
+	//calculate characters until newline
+	while (fgets(input_char_p, 2, fp) != NULL)
+	{
+		characters++;
+		if(*input_char_p == '\n')
+		{	
+			max_characters_per_line = realloc(max_characters_per_line, (max_lines + 1)*sizeof(int));
+			max_characters_per_line[max_lines] = characters;
+			max_lines++;
+			characters = 0;
+		}
+	}
 	
+	max_characters_per_line = realloc(max_characters_per_line, (max_lines + 1)*sizeof(int));
+	max_characters_per_line[max_lines] = characters;
+	max_lines++;
+	characters = 0;
+
+	fclose(fp);
+
+	return;
+
+}
+
+void renderFile(int line, int character)
+{
 	//Resetting max_lines as file might have changed
-	max_lines = 0;
-	
+	int render_line = 0;
+	int render_character = 0;
+	int reset_highlight = 0;
+
 	//Clear window
 	clear();
-
-	if(fp != NULL) 
+	
+	//If no file return
+	if(fp == NULL) 
 	{
-		while (fgets(input, sizeof(input), fp) != NULL) 
+		return;
+	}
+
+	//Render loop
+	while (fgets(input_char_p, 2, fp) != NULL) 
+	{
+		
+		if(render_line == line && render_character == character) // line is selected
 		{
-			if(input[0] != '\n')
-			{
-				max_lines++;
-				printw("%s\n",input);	
-			}
+			attron(A_STANDOUT);
+			reset_highlight = 1;
 		}
-		fclose(fp);
+
+		printw("%s",input_char_p);
+		render_character++;
+
+		if (reset_highlight){
+			attroff(A_STANDOUT);
+			reset_highlight = 0;
+		}
+		
+		// Lines only increment per newline
+		if(*input_char_p == '\n') {
+			render_character = 0;
+			render_line++;
+		};
 	}
 	
 	refresh();			/* Print it on to the real screen */
@@ -59,19 +114,19 @@ void renderFile(int line, int character, char* filepath)
 
 int main(int argc, char *argv[])
 {
-	int line = 1; // What line are you editing
+	int line = 0; // What line are you editing
 	int character = 1; // What character are you editing
 	int c;
 	int eject = 0;
-
+	
 	// If no arguments, exit
 	if (argc <= 0) 
 	{
 		return 0;	
 	}
 
-	//Get current DIR
-	getcwd(cwd, sizeof(cwd));
+	//read file to memory
+	readFile(argv[1]);
 	
 	initscr();			/* Start curses mode 		*/
 	raw();				/* Line buffering disabled	*/
@@ -79,7 +134,7 @@ int main(int argc, char *argv[])
 	noecho();			/* Don't echo() while we do getch */
 	
 	//First render
-	renderFile(line, character, argv[1]);
+	renderFile(line, character);
 
 	while(1)
 	{
@@ -87,7 +142,7 @@ int main(int argc, char *argv[])
 		c = getch();
 		switch(c)
 		{	case KEY_UP:
-				if(line != 1)
+				if(line != 0)
 					--line;
 				break;
 			case KEY_DOWN:
@@ -96,6 +151,14 @@ int main(int argc, char *argv[])
 				break;
 			case 3:
 				eject = 1;
+				break;
+			case KEY_LEFT:
+				if(character != 0)
+					--character;
+				break;
+			case KEY_RIGHT:
+				if(character != line)
+					++character;
 				break;
 			default:
 				mvprintw(24, 0, "Charcter pressed is = %3d Hopefully it can be printed as '%c'", c, c);
@@ -107,7 +170,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 		//render with new info
-		renderFile(line, character, argv[1]);
+		renderFile(line, character);
 
 	}	
 
