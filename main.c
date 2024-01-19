@@ -43,25 +43,26 @@ void readFile(char* filepath)
 	concatenate_string(path_to_file, filepath);
 	fp = fopen(path_to_file, "r");
 
-	//calculate characters until newline
-	while (fgets(input_char_p, 2, fp) != NULL)
-	{
-		characters++;
-		if(*input_char_p == '\n')
-		{	
-			max_characters_per_line = realloc(max_characters_per_line, (max_lines + 1)*sizeof(int));
-			max_characters_per_line[max_lines] = characters;
-			max_lines++;
-			characters = 0;
-		}
-	}
+	// //calculate characters until newline
+	// while (fgets(input_char_p, 2, fp) != NULL)
+	// {
+	// 	characters++;
+	// 	if(*input_char_p == '\n')
+	// 	{
+	// 		// Do realloc, if fails, use tmp
+	// 		int *tmp = max_characters_per_line;
+	// 		max_characters_per_line = realloc(max_characters_per_line, (max_lines + 1)*sizeof(int));
+	// 		if(!max_characters_per_line)
+	// 		{
+	// 			max_characters_per_line = tmp;
+	// 		}
+	//
+	// 		max_characters_per_line[1] = characters;
+	// 		max_lines++;
+	// 		characters = 0;
+	// 	}
+	// }
 	
-	max_characters_per_line = realloc(max_characters_per_line, (max_lines + 1)*sizeof(int));
-	max_characters_per_line[max_lines] = characters;
-	max_lines++;
-	characters = 0;
-
-	fclose(fp);
 
 	return;
 
@@ -82,6 +83,8 @@ void renderFile(int line, int character)
 	{
 		return;
 	}
+	
+	rewind(fp);
 
 	//Render loop
 	while (fgets(input_char_p, 2, fp) != NULL) 
@@ -110,6 +113,8 @@ void renderFile(int line, int character)
 	
 	refresh();			/* Print it on to the real screen */
 
+	return;
+
 }
 
 int main(int argc, char *argv[])
@@ -133,7 +138,6 @@ int main(int argc, char *argv[])
 	keypad(stdscr, TRUE);		/* We get F1, F2 etc..		*/
 	noecho();			/* Don't echo() while we do getch */
 	
-	//First render
 	renderFile(line, character);
 
 	while(1)
@@ -175,6 +179,8 @@ int main(int argc, char *argv[])
 	}	
 
 	endwin();			/* End curses mode		  */
-	
+	//close the supid file
+	fclose(fp);
+
 	return 0;
 }  
