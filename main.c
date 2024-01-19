@@ -43,25 +43,25 @@ void readFile(char* filepath)
 	concatenate_string(path_to_file, filepath);
 	fp = fopen(path_to_file, "r");
 
-	// //calculate characters until newline
-	// while (fgets(input_char_p, 2, fp) != NULL)
-	// {
-	// 	characters++;
-	// 	if(*input_char_p == '\n')
-	// 	{
-	// 		// Do realloc, if fails, use tmp
-	// 		int *tmp = max_characters_per_line;
-	// 		max_characters_per_line = realloc(max_characters_per_line, (max_lines + 1)*sizeof(int));
-	// 		if(!max_characters_per_line)
-	// 		{
-	// 			max_characters_per_line = tmp;
-	// 		}
-	//
-	// 		max_characters_per_line[1] = characters;
-	// 		max_lines++;
-	// 		characters = 0;
-	// 	}
-	// }
+	//calculate characters until newline
+	while (fgets(input_char_p, 2, fp) != NULL)
+	{
+		characters++;
+		if(*input_char_p == '\n')
+		{
+			// Do realloc, if fails, use tmp
+			int *tmp = max_characters_per_line;
+			max_characters_per_line = realloc(max_characters_per_line, (max_lines + 1)*sizeof(int));
+			if(!max_characters_per_line)
+			{
+				max_characters_per_line = tmp;
+			}
+
+			max_characters_per_line[max_lines] = characters;
+			max_lines++;
+			characters = 0;
+		}
+	}
 	
 
 	return;
@@ -148,10 +148,14 @@ int main(int argc, char *argv[])
 		{	case KEY_UP:
 				if(line != 0)
 					--line;
+				if(character >= max_characters_per_line[line])
+					character = max_characters_per_line[line] - 1;
 				break;
 			case KEY_DOWN:
 				if(line != max_lines)
 					++line;
+				if(character >= max_characters_per_line[line])
+					character = max_characters_per_line[line] - 1;
 				break;
 			case 3:
 				eject = 1;
@@ -161,7 +165,7 @@ int main(int argc, char *argv[])
 					--character;
 				break;
 			case KEY_RIGHT:
-				if(character != line)
+				if(character != max_characters_per_line[line] - 2)
 					++character;
 				break;
 			default:
@@ -183,4 +187,4 @@ int main(int argc, char *argv[])
 	fclose(fp);
 
 	return 0;
-}  
+} 
