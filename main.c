@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 					character = max_characters_per_line[line] - 1;
 				break;
 			case KEY_DOWN:
-				if(line != max_lines)
+				if(line != max_lines - 1)
 					++line;
 				if(character >= max_characters_per_line[line])
 					character = max_characters_per_line[line] - 1;
