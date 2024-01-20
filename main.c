@@ -13,6 +13,7 @@ char *cwd_pointer = cwd;
 int max_lines = 0;
 int *max_characters_per_line;
 FILE *fp;
+char *file_buffer;
 
 void concatenate_string(char* s, char* s1)
 {
@@ -43,11 +44,23 @@ void readFile(char* filepath)
 	concatenate_string(path_to_file, filepath);
 	fp = fopen(path_to_file, "r");
 
+	//read characters into a buffer
+	fseek(fp, 0, SEEK_END);
+	long fsize = ftell(fp);
+	file_buffer = (char*)malloc(fsize + 1);
+	fseek(fp, 0, SEEK_SET);
+	fread(file_buffer, fsize, 1, fp);
+	file_buffer[fsize] = '\0';
+	
+	fclose(fp);
+
+	int i = 0;
+
 	//calculate characters until newline
-	while (fgets(input_char_p, 2, fp) != NULL)
+	while (*(file_buffer + i) != '\0')
 	{
 		characters++;
-		if(*input_char_p == '\n')
+		if(*(file_buffer + i) == '\n')
 		{
 			// Do realloc, if fails, use tmp
 			int *tmp = max_characters_per_line;
@@ -61,8 +74,9 @@ void readFile(char* filepath)
 			max_lines++;
 			characters = 0;
 		}
+
+		i++;
 	}
-	
 
 	return;
 
@@ -78,16 +92,10 @@ void renderFile(int line, int character)
 	//Clear window
 	clear();
 	
-	//If no file return
-	if(fp == NULL) 
-	{
-		return;
-	}
-	
-	rewind(fp);
+	int i = 0;
 
 	//Render loop
-	while (fgets(input_char_p, 2, fp) != NULL) 
+	while (file_buffer[i] != '\0') 
 	{
 		
 		if(render_line == line && render_character == character) // line is selected
@@ -96,7 +104,7 @@ void renderFile(int line, int character)
 			reset_highlight = 1;
 		}
 
-		printw("%s",input_char_p);
+		printw("%c",file_buffer[i]);
 		render_character++;
 
 		if (reset_highlight){
@@ -105,10 +113,12 @@ void renderFile(int line, int character)
 		}
 		
 		// Lines only increment per newline
-		if(*input_char_p == '\n') {
+		if(file_buffer[i] == '\n') {
 			render_character = 0;
 			render_line++;
-		};
+		}
+
+		i++;
 	}
 	
 	refresh();			/* Print it on to the real screen */
@@ -169,8 +179,12 @@ int main(int argc, char *argv[])
 					++character;
 				break;
 			default:
-				mvprintw(24, 0, "Charcter pressed is = %3d Hopefully it can be printed as '%c'", c, c);
-				refresh();
+				//mvprintw(24, 0, "Charcter pressed is = %3d Hopefully it can be printed as '%c'", c, c);
+				
+				//insert to file at position
+				
+				
+
 				break;
 		}
 		
@@ -184,7 +198,6 @@ int main(int argc, char *argv[])
 
 	endwin();			/* End curses mode		  */
 	//close the supid file
-	fclose(fp);
 
 	return 0;
 } 
