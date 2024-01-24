@@ -10,8 +10,8 @@
 int main(int argc, char *argv[])
 {
 	int position = 0;
-	int line = 0;
-	int character = 1;
+	int line = 1;
+	int character = 2;
 		
 	// If no arguments, exit
 	if (argc <= 0) 

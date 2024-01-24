@@ -1,4 +1,11 @@
+#include <ncurses.h>
+#include <stdio.h>   
+#include <unistd.h>
+#include <limits.h>
+#include <string.h>
+#include <stdlib.h>
 
+#include "editor_functions.c"
 
 int main(int argc, char *argv[])
 {
@@ -15,7 +22,9 @@ int main(int argc, char *argv[])
 
 	//read file to memory
 	char *file_buffer = readFile(argv[1]);
-	
+	int *max_characters_per_line = calculateBufferLines(file_buffer);
+	int max_lines = (sizeof(*max_characters_per_line)/sizeof(int));
+
 	initscr();			/* Start curses mode 		*/
 	raw();				/* Line buffering disabled	*/
 	keypad(stdscr, TRUE);		/* We get F1, F2 etc..		*/
@@ -48,7 +57,7 @@ int main(int argc, char *argv[])
 					--character;
 				break;
 			case KEY_RIGHT:
-				if(character != max_characters_per_line[line] - 2)
+				if(character != max_characters_per_line[line] - 1)
 					++character;
 				break;
 			default:

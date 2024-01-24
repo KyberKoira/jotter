@@ -11,6 +11,29 @@ char *input_char_p = &input_char;
 int debug = 0;
 int eject = 0;
 
+int *calculateBufferLines(char *buffer)
+{
+	int i = 0;
+	int characters = 0;
+	int lines = 0;
+	int *returnable = malloc(sizeof(int)); //one line atleast
+	while(*(buffer + i) != '\0')
+	{
+		characters++;
+		i++;
+		returnable[lines] = characters;
+
+		if(*(buffer+i) == '\n')
+		{
+			characters = 0;
+			lines++;
+			returnable = realloc(returnable, sizeof(int)*lines);
+		}
+	}
+
+	return returnable;
+}
+
 // Converts line/chararcter combo to position in buffer
 int lineCharToPos(int line, int character, char* buffer)
 {
