@@ -11,6 +11,46 @@ char *input_char_p = &input_char;
 int debug = 0;
 int eject = 0;
 
+void destroyHelpWindow(WINDOW * helpWindow)
+{
+	//Delete current window, if it exists
+	delwin(helpWindow);
+	wrefresh(helpWindow);
+}
+
+void renderHelpWindow(WINDOW *helpWindow)
+{	
+	int height = 4;
+	int width = 4;
+	int starty = 2;
+	int startx = 2;
+	
+
+
+	/* The parameters taken are 
+	 * 1. win: the window on which to operate
+	 * 2. ls: character to be used for the left side of the window 
+	 * 3. rs: character to be used for the right side of the window 
+	 * 4. ts: character to be used for the top side of the window 
+	 * 5. bs: character to be used for the bottom side of the window 
+	 * 6. tl: character to be used for the top left corner of the window 
+	 * 7. tr: character to be used for the top right corner of the window 
+	 * 8. bl: character to be used for the bottom left corner of the window 
+	 * 9. br: character to be used for the bottom right corner of the window
+	 */
+	wrefresh(helpWindow);
+
+}
+
+void destroy_win(WINDOW *local_win)
+{	
+	/* box(local_win, ' ', ' '); : This won't produce the desired
+	 * result of erasing the window. It will leave it's four corners 
+	 * and so an ugly remnant of window. 
+	 */
+	delwin(local_win);
+}
+
 int *calculateBufferLines(char *buffer)
 {
 	int i = 0;
@@ -39,7 +79,7 @@ int lineCharToPos(int line, int character, char* buffer)
 {
 	
 	int position = 0;
-	int search_line = 0;
+	int search_line = 1;
 	int search_character = 0;
 
 	while(*(buffer + position) != '\0' && search_line != line && search_character != character)
@@ -61,17 +101,12 @@ void insertCharacter(char c, char* filebuffer, int position)
 	char tmp_char;
 	char previous_char;
 	int new_amount_of_elements = 0;
-	new_amount_of_elements = strlen(filebuffer) + 2;
+	new_amount_of_elements = strlen(filebuffer) + 2; // strlen doesnt find termination so add one for character and termination
 	// Reallocate buffer (1 more character)
 	char* tmp_buffer = filebuffer;
 	printf("buffer %d\n",new_amount_of_elements);
 	
-	if(debug == 15){
-		printw("%d",new_amount_of_elements);	
-		eject = 1;
-		return;
-
-	}
+	printw("elements %d", new_amount_of_elements);
 
 	filebuffer = realloc(filebuffer, new_amount_of_elements);
 	if(filebuffer == NULL)
@@ -96,7 +131,7 @@ void insertCharacter(char c, char* filebuffer, int position)
 		previous_char = tmp_char;
 
 	}
-	
+
 	// Ought to be terminated
 	filebuffer[new_amount_of_elements - 1] = '\0';
 }
@@ -145,40 +180,12 @@ char* readFile(char* filepath)
 	fread(file_buffer, fsize, 1, fp);
 	file_buffer[fsize] = '\0';
 	fclose(fp);
-	
-	//Need some variables for loop
-	int characters = 0;
-	int i = 0;
-	int max_lines = 0;
-	int *max_characters_per_line;
-
-	//calculate characters until newline
-	while (*(file_buffer + i) != '\0')
-	{
-		characters++;
-		if(*(file_buffer + i) == '\n')
-		{
-			//Do realloc, if fails, use tmp
-			// int *tmp = max_characters_per_line;
-			// max_characters_per_line = realloc(max_characters_per_line, (max_lines + 1)*sizeof(int));
-			// if(!max_characters_per_line)
-			// {
-			// 	max_characters_per_line = tmp;
-			// }
-			//
-			// max_characters_per_line[max_lines] = characters;
-			// max_lines++;
-			// characters = 0;
-		}
-
-		i++;
-	}
 
 	return file_buffer;
 
 }
 
-void renderFile(int line, int character, char* file_buffer)
+void renderFile(int line, int character, char* file_buffer, WINDOW *window)
 {
 	//Resetting max_lines as file might have changed
 	int render_line = 0;
@@ -186,7 +193,7 @@ void renderFile(int line, int character, char* file_buffer)
 	int reset_highlight = 0;
 
 	//Clear window
-	clear();
+	wclear(window);
 	
 	int i = 0;
 
@@ -196,15 +203,15 @@ void renderFile(int line, int character, char* file_buffer)
 		
 		if(render_line == line && render_character == character) // line is selected
 		{
-			attron(A_STANDOUT);
+			wattron(window,A_STANDOUT);
 			reset_highlight = 1;
 		}
 
-		printw("%c",file_buffer[i]);
+		wprintw(window, "%c",file_buffer[i]);
 		render_character++;
 
 		if (reset_highlight){
-			attroff(A_STANDOUT);
+			wattroff(window,A_STANDOUT);
 			reset_highlight = 0;
 		}
 		
@@ -217,7 +224,7 @@ void renderFile(int line, int character, char* file_buffer)
 		i++;
 	}
 	
-	refresh();			/* Print it on to the real screen */
+	wrefresh(window);			/* Print it on to the real screen */
 
 	return;
 

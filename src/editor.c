@@ -14,6 +14,20 @@ int main(int argc, char *argv[])
 	int c;
 	int position; 
 	
+	WINDOW *helpWindow;
+	WINDOW *renderWindow;
+	
+	initscr();			/* Start curses mode 		*/
+	raw();				/* Line buffering disabled	*/
+	keypad(stdscr, TRUE);		/* We get F1, F2 etc..		*/
+	noecho();			/* Don't echo() while we do getch */
+	
+	//create the fullscreen window
+	renderWindow = newwin(0,0,COLS,LINES);
+	wrefresh(renderWindow);
+	printw("HAAA");
+	wrefresh(renderWindow);
+
 	// If no arguments, exit
 	if (argc <= 0) 
 	{
@@ -25,12 +39,9 @@ int main(int argc, char *argv[])
 	int *max_characters_per_line = calculateBufferLines(file_buffer);
 	int max_lines = (sizeof(*max_characters_per_line)/sizeof(int));
 
-	initscr();			/* Start curses mode 		*/
-	raw();				/* Line buffering disabled	*/
-	keypad(stdscr, TRUE);		/* We get F1, F2 etc..		*/
-	noecho();			/* Don't echo() while we do getch */
 	
-	renderFile(line, character, file_buffer);
+	//renderHelpWindow(helpWindow);
+	renderFile(line, character, file_buffer, renderWindow);
 
 	while(1)
 	{
@@ -73,8 +84,12 @@ int main(int argc, char *argv[])
 		if (eject) {
 			break;
 		}
-		//render with new info
-		renderFile(line, character, file_buffer);
+
+		// Render helpwindow
+		//renderHelpWindow(helpWindow);
+
+		// Render with new info
+		renderFile(line, character, file_buffer, renderWindow);
 
 	}	
 
