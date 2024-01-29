@@ -11,22 +11,51 @@ char *input_char_p = &input_char;
 int debug = 0;
 int eject = 0;
 
-void destroyHelpWindow(WINDOW * helpWindow)
+struct FileBuffer {
+	int size;
+	char* buffer;
+};
+ 
+typedef struct FileBuffer Struct;
+
+void destroyHelpWindow(WINDOW *helpWindow)
 {
 	//Delete current window, if it exists
 	delwin(helpWindow);
 	wrefresh(helpWindow);
 }
 
-void renderHelpWindow(WINDOW *helpWindow)
+void renderHelpWindow(WINDOW *helpWindow, int line, int character, int position, int max_lines, int newEls)
 {	
 	int height = 4;
 	int width = 4;
 	int starty = 2;
 	int startx = 2;
 	
+	wclear(helpWindow);
+	wmove(helpWindow, LINES/4, COLS/4);
+	wborder(helpWindow, '.', '.', '.','.','.','.','.','.');
+	
+	// Print Line
+	wmove(helpWindow, 1, 1);
+	wprintw(helpWindow,"Current Line: %d\n", line);	
 
+	// Print Character
+	wmove(helpWindow, 2, 1);
+	wprintw(helpWindow,"Current Character: %d\n", character);	
 
+	// Print Position
+	wmove(helpWindow, 3, 1);
+	wprintw(helpWindow,"Current Position: %d\n", position);	
+
+	// Print Position
+	wmove(helpWindow, 4, 1);
+	wprintw(helpWindow,"Max Lines: %d\n", max_lines);	
+
+	// Print Position
+	wmove(helpWindow, 5, 1);
+	wprintw(helpWindow,"New Elements: %d\n", newEls);	
+	//wprintw(helpWindow, "FUCK");
 	/* The parameters taken are 
 	 * 1. win: the window on which to operate
 	 * 2. ls: character to be used for the left side of the window 
@@ -67,7 +96,7 @@ int *calculateBufferLines(char *buffer)
 		{
 			characters = 0;
 			lines++;
-			returnable = realloc(returnable, sizeof(int)*lines);
+			returnable = realloc(returnable, sizeof(int)*(lines + 1));
 		}
 	}
 
@@ -78,25 +107,64 @@ int *calculateBufferLines(char *buffer)
 int lineCharToPos(int line, int character, char* buffer)
 {
 	
-	int position = 0;
-	int search_line = 1;
+	int i = 0;
+	int search_line = 0;
 	int search_character = 0;
+	int position = 0;
 
-	while(*(buffer + position) != '\0' && search_line != line && search_character != character)
+	while(*(buffer + i) != '\0')
 	{
-		position++;
-		search_character++;
-		if(*(buffer + position) == '\n')
+		if(search_line == line && search_character == character)
+		{
+			break;
+		}
+		
+		i++;
+
+		if(*(buffer + i) == '\n')
 		{
 			search_line++;
 			search_character = 0;
+			position++;
 		}
+		else
+		{
+			search_character++;
+			position++;
+		}
+
 	}
 
 	return position;
 }
 
-void insertCharacter(char c, char* filebuffer, int position)
+Struct insertCharacterEnd(char c, Struct filebuffer, int position)
+{
+	char tmp_char;
+	char previous_char;
+	int new_amount_of_elements = 0;
+	new_amount_of_elements = filebuffer.size + 1; // strlen doesnt find termination so add one for character and termination
+	filebuffer.size = filebuffer.size + 1;	
+
+	// Reallocate buffer (1 more character)
+	char* tmp_buffer = filebuffer.buffer;
+	//printw("elements %d", new_amount_of_elements);
+
+	filebuffer.buffer = realloc(filebuffer.buffer, new_amount_of_elements);
+	if(filebuffer.buffer == NULL)
+	{
+		filebuffer.buffer = "tmp_buffer";
+		printf("%d", new_amount_of_elements);
+		return filebuffer;
+	}
+
+	// Ought to be terminated
+	filebuffer.buffer[new_amount_of_elements - 1] = '\0';
+	filebuffer.buffer[new_amount_of_elements - 2] = c;
+
+	return filebuffer;
+}
+int insertCharacter(char c, char* filebuffer, int position)
 {
 	char tmp_char;
 	char previous_char;
@@ -104,36 +172,46 @@ void insertCharacter(char c, char* filebuffer, int position)
 	new_amount_of_elements = strlen(filebuffer) + 2; // strlen doesnt find termination so add one for character and termination
 	// Reallocate buffer (1 more character)
 	char* tmp_buffer = filebuffer;
-	printf("buffer %d\n",new_amount_of_elements);
-	
-	printw("elements %d", new_amount_of_elements);
+	//printw("elements %d", new_amount_of_elements);
 
 	filebuffer = realloc(filebuffer, new_amount_of_elements);
 	if(filebuffer == NULL)
 	{
 		filebuffer = "tmp_buffer";
 		printf("%d", new_amount_of_elements);
-		return;
+		return new_amount_of_elements;
 	}
+
 	int i = 0;
 
 	// Get the character at current pos you wanna replace
-	previous_char = filebuffer[position + i];
-	// Insert by replacing
-	filebuffer[position + i] = c;
+	previous_char = c;
 	
-	while((position + i) < new_amount_of_elements - 2){
+	// Ought to be terminated
+	filebuffer[new_amount_of_elements] = '\0';
+
+	//loop until end
+	while(filebuffer[position + i] != '\0'){
 		
-		i++;
-		//move rest forward until EOF
-		tmp_char = *(filebuffer + position + i);
-		*(filebuffer + position + i) = previous_char;
+		// Move rest forward until EOF
+
+		// Get next character to be replaced to temp
+		tmp_char = filebuffer[position + i];
+		
+		// Replace with previous
+		filebuffer[position + i] = previous_char;
+
+		// Temp is the new previous
 		previous_char = tmp_char;
+
+		i++;
 
 	}
 
-	// Ought to be terminated
-	filebuffer[new_amount_of_elements - 1] = '\0';
+	// there should be two terminations, and this gets rid of the unnecessary one
+	filebuffer[position + i] = previous_char;
+
+	return new_amount_of_elements;
 }
 
 void concatenate_string(char* s, char* s1)
@@ -151,8 +229,11 @@ void concatenate_string(char* s, char* s1)
     return;
 }
 
-char* readFile(char* filepath)
+Struct readFile(char* filepath)
 {
+	
+	Struct buff;
+
 	if(filepath[0] == '\0')
 	{
 		printf("No file name given!");
@@ -175,13 +256,16 @@ char* readFile(char* filepath)
 	FILE *fp = fopen(path_to_file, "r");
 	fseek(fp, 0, SEEK_END);
 	long fsize = ftell(fp);
-	char *file_buffer = (char*)malloc(fsize + 1);
+
+	buff.buffer = (char*)malloc(fsize + 1);
+	buff.size = fsize + 1;
+
 	fseek(fp, 0, SEEK_SET);
-	fread(file_buffer, fsize, 1, fp);
-	file_buffer[fsize] = '\0';
+	fread(buff.buffer, fsize, 1, fp);
+	buff.buffer[fsize] = '\0';
 	fclose(fp);
 
-	return file_buffer;
+	return buff;
 
 }
 
@@ -230,3 +314,19 @@ void renderFile(int line, int character, char* file_buffer, WINDOW *window)
 
 }
 
+int calculateLines(char* buffer)
+{
+	int i = 0;
+	int returnable = 0;
+	
+	while(*(buffer + i) != '\0')
+	{
+		i++;
+		if(*(buffer+i) == '\n')
+		{
+			returnable++;
+		}
+	}
+
+	return returnable;
+}

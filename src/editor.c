@@ -8,40 +8,40 @@
 #include "editor_functions.c"
 
 int main(int argc, char *argv[])
+
 {
 	int line = 0; // What line are you editing
 	int character = 0; // What character are you editing
 	int c;
-	int position; 
+	int position = 0;
+	int newEls = 0;
 	
 	WINDOW *helpWindow;
 	WINDOW *renderWindow;
 	
 	initscr();			/* Start curses mode 		*/
+	refresh();
 	raw();				/* Line buffering disabled	*/
 	keypad(stdscr, TRUE);		/* We get F1, F2 etc..		*/
 	noecho();			/* Don't echo() while we do getch */
 	
 	//create the fullscreen window
-	renderWindow = newwin(0,0,COLS,LINES);
-	wrefresh(renderWindow);
-	printw("HAAA");
-	wrefresh(renderWindow);
-
+	renderWindow = newwin(LINES,COLS,0,0);
+	helpWindow = newwin(LINES/4, COLS/4, LINES-LINES/3, COLS-COLS/3);
+	
 	// If no arguments, exit
 	if (argc <= 0) 
 	{
 		return 0;	
 	}
-
-	//read file to memory
-	char *file_buffer = readFile(argv[1]);
-	int *max_characters_per_line = calculateBufferLines(file_buffer);
-	int max_lines = (sizeof(*max_characters_per_line)/sizeof(int));
-
 	
-	//renderHelpWindow(helpWindow);
-	renderFile(line, character, file_buffer, renderWindow);
+	//read file to memory
+	Struct file_buffer = readFile(argv[1]);
+	int *max_characters_per_line = calculateBufferLines(file_buffer.buffer);
+	int max_lines = calculateLines(file_buffer.buffer);
+	
+	//renderFile(line, character, file_buffer.buffer, renderWindow);
+	renderHelpWindow(helpWindow, line, character, position, max_lines, newEls);
 
 	while(1)
 	{
@@ -75,22 +75,22 @@ int main(int argc, char *argv[])
 				//mvprintw(24, 0, "Charcter pressed is = %3d Hopefully it can be printed as '%c'", c, c);
 				
 				//reallocate memory
-				position = lineCharToPos(line, character, file_buffer);
-				insertCharacter(c, file_buffer, position);
+				position = lineCharToPos(line, character, file_buffer.buffer);
+				file_buffer = insertCharacterEnd(c, file_buffer, position);
 
 		}
-
 		
 		if (eject) {
 			break;
 		}
-
-		// Render helpwindow
-		//renderHelpWindow(helpWindow);
+		
+		position = lineCharToPos(line, character, file_buffer.buffer);
 
 		// Render with new info
-		renderFile(line, character, file_buffer, renderWindow);
+		renderFile(line, character, file_buffer.buffer, renderWindow);
 
+		// Render helpwindow
+		renderHelpWindow(helpWindow, line, character, position, max_lines, newEls);
 	}	
 
 	endwin();			/* End curses mode		  */
