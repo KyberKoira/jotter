@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 				
 				//reallocate memory
 				position = lineCharToPos(line, character, file_buffer.buffer);
-				file_buffer = insertCharacterEnd(c, file_buffer, position);
+				file_buffer = insertCharacter(c, file_buffer, position);
 
 		}
 		

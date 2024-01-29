@@ -164,22 +164,20 @@ Struct insertCharacterEnd(char c, Struct filebuffer, int position)
 
 	return filebuffer;
 }
-int insertCharacter(char c, char* filebuffer, int position)
+Struct insertCharacter(char c, Struct filebuffer, int position)
 {
 	char tmp_char;
 	char previous_char;
-	int new_amount_of_elements = 0;
-	new_amount_of_elements = strlen(filebuffer) + 2; // strlen doesnt find termination so add one for character and termination
 	// Reallocate buffer (1 more character)
-	char* tmp_buffer = filebuffer;
-	//printw("elements %d", new_amount_of_elements);
+	char* tmp_buffer = filebuffer.buffer;
 
-	filebuffer = realloc(filebuffer, new_amount_of_elements);
-	if(filebuffer == NULL)
+	filebuffer.buffer = realloc(filebuffer.buffer, filebuffer.size + 1);
+	filebuffer.size++;
+
+	if(filebuffer.buffer == NULL)
 	{
-		filebuffer = "tmp_buffer";
-		printf("%d", new_amount_of_elements);
-		return new_amount_of_elements;
+		filebuffer.buffer = "tmp_buffer";
+		return filebuffer;
 	}
 
 	int i = 0;
@@ -188,18 +186,18 @@ int insertCharacter(char c, char* filebuffer, int position)
 	previous_char = c;
 	
 	// Ought to be terminated
-	filebuffer[new_amount_of_elements] = '\0';
+	filebuffer.buffer[filebuffer.size - 1] = '\0';
 
 	//loop until end
-	while(filebuffer[position + i] != '\0'){
+	while(filebuffer.buffer[position + i] != '\0'){
 		
 		// Move rest forward until EOF
 
 		// Get next character to be replaced to temp
-		tmp_char = filebuffer[position + i];
+		tmp_char = filebuffer.buffer[position + i];
 		
 		// Replace with previous
-		filebuffer[position + i] = previous_char;
+		filebuffer.buffer[position + i] = previous_char;
 
 		// Temp is the new previous
 		previous_char = tmp_char;
@@ -209,9 +207,9 @@ int insertCharacter(char c, char* filebuffer, int position)
 	}
 
 	// there should be two terminations, and this gets rid of the unnecessary one
-	filebuffer[position + i] = previous_char;
+	filebuffer.buffer[position + i] = previous_char;
 
-	return new_amount_of_elements;
+	return filebuffer;
 }
 
 void concatenate_string(char* s, char* s1)
