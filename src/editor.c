@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 	noecho();			/* Don't echo() while we do getch */
 	
 	//create the fullscreen window
-	renderWindow = newwin(LINES,COLS,0,0);
+	renderWindow = newwin(LINES, COLS, 0, 0);
 	helpWindow = newwin(LINES/4, COLS/4, LINES-LINES/3, COLS-COLS/3);
 	
 	// If no arguments, exit
@@ -35,11 +35,11 @@ int main(int argc, char *argv[])
 	}
 	
 	//read file to memory
-	Struct file_buffer = readFile(argv[1]);
+	FileBuffer file_buffer = readFile(argv[1]);
 	int *max_characters_per_line = calculateBufferLines(file_buffer.buffer);
 	int max_lines = calculateLines(file_buffer.buffer);
 	
-	//renderFile(line, character, file_buffer.buffer, renderWindow);
+	renderFile(line, character, file_buffer.buffer, renderWindow);
 	renderHelpWindow(helpWindow, line, character, position, max_lines, newEls, c);
 
 	while(1)

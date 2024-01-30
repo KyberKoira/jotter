@@ -14,9 +14,11 @@ int eject = 0;
 struct FileBuffer {
 	int size;
 	char* buffer;
+	int max_lines;
+	int* max_characters_per_line;
 };
  
-typedef struct FileBuffer Struct;
+typedef struct FileBuffer FileBuffer;
 
 void destroyHelpWindow(WINDOW *helpWindow)
 {
@@ -143,7 +145,7 @@ int lineCharToPos(int line, int character, char* buffer)
 	return position;
 }
 
-Struct insertCharacterEnd(char c, Struct filebuffer, int position)
+FileBuffer insertCharacterEnd(char c, FileBuffer filebuffer, int position)
 {
 	char tmp_char;
 	char previous_char;
@@ -170,7 +172,7 @@ Struct insertCharacterEnd(char c, Struct filebuffer, int position)
 	return filebuffer;
 }
 
-Struct removeCharacter(Struct filebuffer, int position)
+FileBuffer removeCharacter(FileBuffer filebuffer, int position)
 {
 	char tmp_char;
 	char previous_char;
@@ -208,7 +210,7 @@ Struct removeCharacter(Struct filebuffer, int position)
 	return filebuffer;
 }
 
-Struct insertCharacter(char c, Struct filebuffer, int position)
+FileBuffer insertCharacter(char c, FileBuffer filebuffer, int position)
 {
 	char tmp_char;
 	char previous_char;
@@ -271,10 +273,10 @@ void concatenate_string(char* s, char* s1)
     return;
 }
 
-Struct readFile(char* filepath)
+FileBuffer readFile(char* filepath)
 {
 	
-	Struct buff;
+	FileBuffer buff;
 
 	if(filepath[0] == '\0')
 	{
@@ -332,17 +334,27 @@ void renderFile(int line, int character, char* file_buffer, WINDOW *window)
 			wattron(window,A_STANDOUT);
 			reset_highlight = 1;
 		}
+		
+		if(file_buffer[i] == '\n')
+		{
+			wprintw(window, " \n");
 
-		wprintw(window, "%c",file_buffer[i]);
+		}
+		else
+		{
+			wprintw(window, "%c",file_buffer[i]);
+		}
 		render_character++;
 
-		if (reset_highlight){
+		if (reset_highlight)
+		{
 			wattroff(window,A_STANDOUT);
 			reset_highlight = 0;
 		}
 		
 		// Lines only increment per newline
-		if(file_buffer[i] == '\n') {
+		if(file_buffer[i] == '\n') 
+		{
 			render_character = 0;
 			render_line++;
 		}
