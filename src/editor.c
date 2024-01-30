@@ -8,11 +8,10 @@
 #include "editor_functions.c"
 
 int main(int argc, char *argv[])
-
 {
 	int line = 0; // What line are you editing
 	int character = 0; // What character are you editing
-	int c;
+	int c, currentX, currentY;
 	int position = 0;
 	int newEls = 0;
 	
@@ -72,12 +71,12 @@ int main(int argc, char *argv[])
 					++character;
 				break;
 			default:
-				//mvprintw(24, 0, "Charcter pressed is = %3d Hopefully it can be printed as '%c'", c, c);
-				
 				//reallocate memory
 				position = lineCharToPos(line, character, file_buffer.buffer);
 				file_buffer = insertCharacter(c, file_buffer, position);
-
+				
+				// Once character has been moved, cursor should move one forward
+				character++;
 		}
 		
 		if (eject) {
