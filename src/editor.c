@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	int max_lines = calculateLines(file_buffer.buffer);
 	
 	//renderFile(line, character, file_buffer.buffer, renderWindow);
-	renderHelpWindow(helpWindow, line, character, position, max_lines, newEls);
+	renderHelpWindow(helpWindow, line, character, position, max_lines, newEls, c);
 
 	while(1)
 	{
@@ -59,8 +59,12 @@ int main(int argc, char *argv[])
 				if(character >= max_characters_per_line[line])
 					character = max_characters_per_line[line] - 1;
 				break;
-			case 3:
+			case 3: // CTRL + C
 				eject = 1;
+				break;
+			case 263: //Backspace
+				file_buffer = removeCharacter(file_buffer, position - 1);
+				character--;
 				break;
 			case KEY_LEFT:
 				if(character != 0)
@@ -74,7 +78,7 @@ int main(int argc, char *argv[])
 				//reallocate memory
 				position = lineCharToPos(line, character, file_buffer.buffer);
 				file_buffer = insertCharacter(c, file_buffer, position);
-				
+					
 				// Once character has been moved, cursor should move one forward
 				character++;
 		}
@@ -89,7 +93,7 @@ int main(int argc, char *argv[])
 		renderFile(line, character, file_buffer.buffer, renderWindow);
 
 		// Render helpwindow
-		renderHelpWindow(helpWindow, line, character, position, max_lines, newEls);
+		renderHelpWindow(helpWindow, line, character, position, max_lines, newEls, c);
 	}	
 
 	endwin();			/* End curses mode		  */

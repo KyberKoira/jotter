@@ -25,7 +25,7 @@ void destroyHelpWindow(WINDOW *helpWindow)
 	wrefresh(helpWindow);
 }
 
-void renderHelpWindow(WINDOW *helpWindow, int line, int character, int position, int max_lines, int newEls)
+void renderHelpWindow(WINDOW *helpWindow, int line, int character, int position, int max_lines, int newEls, int c)
 {	
 	int height = 4;
 	int width = 4;
@@ -55,6 +55,11 @@ void renderHelpWindow(WINDOW *helpWindow, int line, int character, int position,
 	// Print Position
 	wmove(helpWindow, 5, 1);
 	wprintw(helpWindow,"New Elements: %d\n", newEls);	
+
+	// Print Position
+	wmove(helpWindow, 6, 1);
+	wprintw(helpWindow,"You Pressed: %d\n", c);	
+
 	//wprintw(helpWindow, "FUCK");
 	/* The parameters taken are 
 	 * 1. win: the window on which to operate
@@ -164,6 +169,45 @@ Struct insertCharacterEnd(char c, Struct filebuffer, int position)
 
 	return filebuffer;
 }
+
+Struct removeCharacter(Struct filebuffer, int position)
+{
+	char tmp_char;
+	char previous_char;
+	// Reallocate buffer (1 more character)
+	char* tmp_buffer = filebuffer.buffer;
+
+	filebuffer.buffer = realloc(filebuffer.buffer, filebuffer.size - 1);
+	filebuffer.size--;
+
+	if(filebuffer.buffer == NULL)
+	{
+		filebuffer.buffer = tmp_buffer;
+		return filebuffer;
+	}
+
+	int i = 0;
+	
+	// Last character
+	char lastchar = filebuffer.buffer[filebuffer.size - 1];
+
+	// Ought to be terminated
+	filebuffer.buffer[filebuffer.size - 1] = '\0';
+
+	// Loop from deletion point and replace
+	while(filebuffer.buffer[position + i] != '\0')
+	{
+		// Replace current with next
+		filebuffer.buffer[position + i] = filebuffer.buffer[position + i + 1];
+		i++;
+	}
+
+	// there should be two terminations, and this gets rid of the unnecessary one
+	filebuffer.buffer[position + i - 1] = lastchar;
+
+	return filebuffer;
+}
+
 Struct insertCharacter(char c, Struct filebuffer, int position)
 {
 	char tmp_char;
