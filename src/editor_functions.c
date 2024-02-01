@@ -27,7 +27,7 @@ void destroyHelpWindow(WINDOW *helpWindow)
 	wrefresh(helpWindow);
 }
 
-void renderHelpWindow(WINDOW *helpWindow, int line, int character, int position, int max_lines, int newEls, int c)
+void renderHelpWindow(WINDOW *helpWindow, int line, int character, int position, int max_lines, int newEls, int c, int saved)
 {	
 	int height = 4;
 	int width = 4;
@@ -61,6 +61,10 @@ void renderHelpWindow(WINDOW *helpWindow, int line, int character, int position,
 	// Print Position
 	wmove(helpWindow, 6, 1);
 	wprintw(helpWindow,"You Pressed: %d\n", c);	
+
+	// Print Position
+	wmove(helpWindow, 7, 1);
+	wprintw(helpWindow,"Saved: %d\n", saved);	
 
 	//wprintw(helpWindow, "FUCK");
 	/* The parameters taken are 
@@ -383,4 +387,21 @@ FileBuffer calculateLines(FileBuffer buffer)
 	buffer.max_lines = returnable;
 
 	return buffer;
+}
+
+int saveFile(FileBuffer buffer)
+{
+	FILE * file;
+
+	file = fopen("file1.txt", "w");
+	if(file == NULL)
+	{
+		printf("Unable to create file.\n");
+		return 0;
+	}
+
+	fputs(buffer.buffer, file);
+	fclose(file);
+
+	return 1;
 }

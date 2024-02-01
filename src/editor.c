@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 	int character = 0; // What character are you editing
 	int c, currentX, currentY;
 	int position = 0;
-	int newEls = 0;
+	int newEls, saved = 0;
 	
 	WINDOW *helpWindow;
 	WINDOW *renderWindow;
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	file_buffer = calculateLines(file_buffer);
 	
 	renderFile(line, character, file_buffer.buffer, renderWindow);
-	renderHelpWindow(helpWindow, line, character, position, file_buffer.max_lines, newEls, c);
+	renderHelpWindow(helpWindow, line, character, position, file_buffer.max_lines, newEls, c, saved);
 
 	while(1)
 	{
@@ -74,6 +74,9 @@ int main(int argc, char *argv[])
 				if(character != file_buffer.max_characters_per_line[line] - 1)
 					++character;
 				break;
+			case 19: // CTRL + S
+				saved = saveFile(file_buffer);
+				break;
 			default:
 				//reallocate memory
 				position = lineCharToPos(line, character, file_buffer.buffer);
@@ -93,7 +96,7 @@ int main(int argc, char *argv[])
 		renderFile(line, character, file_buffer.buffer, renderWindow);
 
 		// Render helpwindow
-		renderHelpWindow(helpWindow, line, character, position, file_buffer.max_lines, newEls, c);
+		renderHelpWindow(helpWindow, line, character, position, file_buffer.max_lines, newEls, c, saved);
 		file_buffer = calculateBufferLines(file_buffer);
 		file_buffer = calculateLines(file_buffer);
 
