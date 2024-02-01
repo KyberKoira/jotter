@@ -36,11 +36,11 @@ int main(int argc, char *argv[])
 	
 	//read file to memory
 	FileBuffer file_buffer = readFile(argv[1]);
-	int *max_characters_per_line = calculateBufferLines(file_buffer.buffer);
-	int max_lines = calculateLines(file_buffer.buffer);
+	file_buffer = calculateBufferLines(file_buffer);
+	file_buffer = calculateLines(file_buffer);
 	
 	renderFile(line, character, file_buffer.buffer, renderWindow);
-	renderHelpWindow(helpWindow, line, character, position, max_lines, newEls, c);
+	renderHelpWindow(helpWindow, line, character, position, file_buffer.max_lines, newEls, c);
 
 	while(1)
 	{
@@ -50,14 +50,14 @@ int main(int argc, char *argv[])
 		{	case KEY_UP:
 				if(line != 0)
 					--line;
-				if(character >= max_characters_per_line[line])
-					character = max_characters_per_line[line] - 1;
+				if(character >= file_buffer.max_characters_per_line[line])
+					character = file_buffer.max_characters_per_line[line] - 1;
 				break;
 			case KEY_DOWN:
-				if(line != max_lines - 1)
+				if(line != file_buffer.max_lines - 1)
 					++line;
-				if(character >= max_characters_per_line[line])
-					character = max_characters_per_line[line] - 1;
+				if(character >= file_buffer.max_characters_per_line[line])
+					character = file_buffer.max_characters_per_line[line] - 1;
 				break;
 			case 3: // CTRL + C
 				eject = 1;
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 					--character;
 				break;
 			case KEY_RIGHT:
-				if(character != max_characters_per_line[line] - 1)
+				if(character != file_buffer.max_characters_per_line[line] - 1)
 					++character;
 				break;
 			default:
@@ -93,7 +93,10 @@ int main(int argc, char *argv[])
 		renderFile(line, character, file_buffer.buffer, renderWindow);
 
 		// Render helpwindow
-		renderHelpWindow(helpWindow, line, character, position, max_lines, newEls, c);
+		renderHelpWindow(helpWindow, line, character, position, file_buffer.max_lines, newEls, c);
+		file_buffer = calculateBufferLines(file_buffer);
+		file_buffer = calculateLines(file_buffer);
+
 	}	
 
 	endwin();			/* End curses mode		  */

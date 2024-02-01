@@ -87,19 +87,19 @@ void destroy_win(WINDOW *local_win)
 	delwin(local_win);
 }
 
-int *calculateBufferLines(char *buffer)
+FileBuffer calculateBufferLines(FileBuffer buffer)
 {
 	int i = 0;
 	int characters = 0;
 	int lines = 0;
 	int *returnable = malloc(sizeof(int)); //one line atleast
-	while(*(buffer + i) != '\0')
+	while(*(buffer.buffer + i) != '\0')
 	{
 		characters++;
 		i++;
 		returnable[lines] = characters;
 
-		if(*(buffer+i) == '\n')
+		if(*(buffer.buffer+i) == '\n')
 		{
 			characters = 0;
 			lines++;
@@ -107,39 +107,37 @@ int *calculateBufferLines(char *buffer)
 		}
 	}
 
-	return returnable;
+	buffer.max_characters_per_line = returnable;
+
+	return buffer;
 }
 
 // Converts line/chararcter combo to position in buffer
 int lineCharToPos(int line, int character, char* buffer)
 {
 	
-	int i = 0;
 	int search_line = 0;
 	int search_character = 0;
 	int position = 0;
 
-	while(*(buffer + i) != '\0')
+	while(*(buffer + position) != '\0')
 	{
 		if(search_line == line && search_character == character)
 		{
 			break;
 		}
 		
-		i++;
-
-		if(*(buffer + i) == '\n')
+		if(*(buffer + position) == '\n')
 		{
 			search_line++;
 			search_character = 0;
-			position++;
 		}
 		else
 		{
 			search_character++;
-			position++;
 		}
-
+		
+		position++;
 	}
 
 	return position;
@@ -368,19 +366,21 @@ void renderFile(int line, int character, char* file_buffer, WINDOW *window)
 
 }
 
-int calculateLines(char* buffer)
+FileBuffer calculateLines(FileBuffer buffer)
 {
 	int i = 0;
 	int returnable = 0;
 	
-	while(*(buffer + i) != '\0')
+	while(*(buffer.buffer + i) != '\0')
 	{
 		i++;
-		if(*(buffer+i) == '\n')
+		if(*(buffer.buffer+i) == '\n')
 		{
 			returnable++;
 		}
 	}
+	
+	buffer.max_lines = returnable;
 
-	return returnable;
+	return buffer;
 }
