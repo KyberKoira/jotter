@@ -1,4 +1,4 @@
-ihwdaljhdlwhldjhalkwjdljwlkjHere i have copied this newfile.txt in project file and compiling in VC++ 2008 IDE.It works fine
+Here i have copied this newfile.txt in project file and compiling in VC++ 2008 IDE.It works fine
 
 I would like to read the file from a local drive directory path.is it possible to read the files from local drive.how to mention the path.If so please mention any example.
 

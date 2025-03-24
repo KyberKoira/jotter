@@ -1,5 +1,5 @@
 #!/bin/bash
 
-gcc ./src/editor.c -lncurses -o ./bin/editor.cool
+gcc ./src/editor.c -lncurses -o ./bin/jotter
 
-./bin/editor.cool inputs/shitt.txt
+./bin/jotter inputs/shitt.txt
